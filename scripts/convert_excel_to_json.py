@@ -13,7 +13,7 @@ import json
 # Paths
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
-INPUT_FOLDER = os.path.join(os.path.dirname(PROJECT_DIR), "input_files")
+INPUT_FOLDER = os.path.join(os.path.dirname(PROJECT_DIR), "drive-download-20260203T064840Z-3-001")
 OUTPUT_FILE = os.path.join(PROJECT_DIR, "src", "data", "voters.json")
 
 all_records = []
@@ -92,12 +92,14 @@ def main():
         try:
             df = pd.read_excel(os.path.join(INPUT_FOLDER, file))
 
-            for _, row in df.iterrows():
-                for cell in row:
-                    if isinstance(cell, str) and re.search(r"\b\d{5}\b", cell):
-                        record = parse_record(cell)
-                        if record:
-                            all_records.append(record)
+            # Merge entire row into one string to avoid missing split addresses
+            df["__merged__"] = df.astype(str).agg(" ".join, axis=1)
+
+            for row_text in df["__merged__"]:
+                if re.search(r"\b\d{5}\b", row_text):
+                    record = parse_record(row_text)
+                    if record:
+                        all_records.append(record)
         except Exception as e:
             print(f"  Error processing {file}: {e}")
 
