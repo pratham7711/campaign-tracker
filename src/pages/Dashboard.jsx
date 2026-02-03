@@ -6,8 +6,7 @@ import VoterList from '../components/VoterList'
 
 export default function Dashboard({ user, onLogout }) {
   const [filters, setFilters] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     pincode: '',
     address: '',
   })
@@ -81,8 +80,7 @@ export default function Dashboard({ user, onLogout }) {
   // Search voters from database
   const searchVoters = async (searchFilters) => {
     const hasFilters =
-      searchFilters.firstName || searchFilters.lastName ||
-      searchFilters.pincode || searchFilters.address
+      searchFilters.name || searchFilters.pincode || searchFilters.address
 
     if (!hasFilters) {
       setVoters([])
@@ -93,11 +91,9 @@ export default function Dashboard({ user, onLogout }) {
     try {
       let query = supabase.from('voters').select('*')
 
-      if (searchFilters.firstName) {
-        query = query.ilike('first_name', `%${searchFilters.firstName}%`)
-      }
-      if (searchFilters.lastName) {
-        query = query.ilike('last_name', `%${searchFilters.lastName}%`)
+      if (searchFilters.name) {
+        // Search in full_name which contains first, middle, last name
+        query = query.ilike('full_name', `%${searchFilters.name}%`)
       }
       if (searchFilters.pincode) {
         query = query.ilike('pincode', `%${searchFilters.pincode}%`)
@@ -184,7 +180,7 @@ export default function Dashboard({ user, onLogout }) {
     )
   }
 
-  const hasFilters = filters.firstName || filters.lastName || filters.pincode || filters.address
+  const hasFilters = filters.name || filters.pincode || filters.address
 
   return (
     <div className="dashboard">

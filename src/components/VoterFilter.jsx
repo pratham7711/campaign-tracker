@@ -2,8 +2,7 @@ import { useState } from 'react'
 
 export default function VoterFilter({ onFilter, totalVoters }) {
   const [filters, setFilters] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     pincode: '',
     address: '',
   })
@@ -20,14 +19,12 @@ export default function VoterFilter({ onFilter, totalVoters }) {
 
   const handleClear = () => {
     setFilters({
-      firstName: '',
-      lastName: '',
+      name: '',
       pincode: '',
       address: '',
     })
     onFilter({
-      firstName: '',
-      lastName: '',
+      name: '',
       pincode: '',
       address: '',
     })
@@ -41,25 +38,13 @@ export default function VoterFilter({ onFilter, totalVoters }) {
       <form onSubmit={handleSubmit} className="filter-form">
         <div className="filter-grid">
           <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="name">Name</label>
             <input
-              id="firstName"
-              name="firstName"
+              id="name"
+              name="name"
               type="text"
-              placeholder="e.g., RAJESH"
-              value={filters.firstName}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="lastName">Surname / Last Name</label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              placeholder="e.g., SHARMA"
-              value={filters.lastName}
+              placeholder="e.g., SHARMA, RAJESH, KUMAR"
+              value={filters.name}
               onChange={handleChange}
             />
           </div>
