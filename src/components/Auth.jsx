@@ -63,7 +63,7 @@ export default function Auth() {
           }
         }
 
-        setMessage('Account created! You can now log in.')
+        setMessage('Account created! Check your email to verify (check spam folder if not found). You can then log in.')
         setIsLogin(true)
       }
     } catch (err) {

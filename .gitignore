@@ -24,3 +24,10 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Scripts folder (data processing only, not needed for deployment)
+scripts/
