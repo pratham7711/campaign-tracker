@@ -91,15 +91,25 @@ export default function Dashboard({ user, onLogout }) {
     try {
       let query = supabase.from('voters').select('*')
 
+      // Build OR conditions to search in both main fields and metadata
+      const orConditions = []
+
       if (searchFilters.name) {
-        // Search in full_name which contains first, middle, last name
-        query = query.ilike('full_name', `%${searchFilters.name}%`)
+        // Search in full_name and metadata
+        orConditions.push(`full_name.ilike.%${searchFilters.name}%`)
+        orConditions.push(`metadata.ilike.%${searchFilters.name}%`)
       }
       if (searchFilters.pincode) {
-        query = query.ilike('pincode', `%${searchFilters.pincode}%`)
+        orConditions.push(`pincode.ilike.%${searchFilters.pincode}%`)
+        orConditions.push(`metadata.ilike.%${searchFilters.pincode}%`)
       }
       if (searchFilters.address) {
-        query = query.ilike('address', `%${searchFilters.address}%`)
+        orConditions.push(`address.ilike.%${searchFilters.address}%`)
+        orConditions.push(`metadata.ilike.%${searchFilters.address}%`)
+      }
+
+      if (orConditions.length > 0) {
+        query = query.or(orConditions.join(','))
       }
 
       // Set high limit to fetch all results (Supabase defaults to 1000)
@@ -118,7 +128,8 @@ export default function Dashboard({ user, onLogout }) {
         contact: v.contact,
         address: v.address,
         pincode: v.pincode,
-        city: v.city
+        city: v.city,
+        metadata: v.metadata
       }))
 
       setVoters(formattedVoters)
