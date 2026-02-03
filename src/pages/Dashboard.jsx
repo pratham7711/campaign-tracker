@@ -106,8 +106,7 @@ export default function Dashboard({ user, onLogout }) {
         query = query.ilike('address', `%${searchFilters.address}%`)
       }
 
-      query = query.limit(500)
-
+      // No limit - fetch all matching results
       const { data, error } = await query
 
       if (error) throw error
