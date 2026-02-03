@@ -102,7 +102,9 @@ export default function Dashboard({ user, onLogout }) {
         query = query.ilike('address', `%${searchFilters.address}%`)
       }
 
-      // No limit - fetch all matching results
+      // Set high limit to fetch all results (Supabase defaults to 1000)
+      query = query.limit(100000)
+
       const { data, error } = await query
 
       if (error) throw error
