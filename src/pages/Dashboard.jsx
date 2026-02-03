@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 import VoterFilter from '../components/VoterFilter'
 import VoterList from '../components/VoterList'
 
-export default function Dashboard({ user }) {
+export default function Dashboard({ user, onLogout }) {
   const [filters, setFilters] = useState({
     firstName: '',
     lastName: '',
@@ -27,6 +27,7 @@ export default function Dashboard({ user }) {
 
   const ensureProfileExists = async () => {
     try {
+      // Check if guest profile exists
       const { data: profile } = await supabase
         .from('user_profiles')
         .select('id')
@@ -34,14 +35,16 @@ export default function Dashboard({ user }) {
         .single()
 
       if (!profile) {
+        // Create guest profile
         await supabase
           .from('user_profiles')
-          .insert([{ id: user.id, display_name: user.email.split('@')[0] }])
+          .insert([{ id: user.id, display_name: user.displayName }])
       }
     } catch (err) {
+      // Try to create profile if not exists
       await supabase
         .from('user_profiles')
-        .insert([{ id: user.id, display_name: user.email.split('@')[0] }])
+        .insert([{ id: user.id, display_name: user.displayName }])
         .catch(() => {})
     }
   }
@@ -186,7 +189,7 @@ export default function Dashboard({ user }) {
 
   return (
     <div className="dashboard">
-      <Navbar user={user} callCount={calledVoters.size} />
+      <Navbar user={user} callCount={calledVoters.size} onLogout={onLogout} />
 
       <main className="dashboard-content">
         <VoterFilter onFilter={handleFilter} totalVoters={totalVoters} />
