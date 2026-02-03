@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Navbar from '../components/Navbar'
 import VoterFilter from '../components/VoterFilter'
 import VoterList from '../components/VoterList'
-import votersData from '../data/voters.json'
 
 export default function Dashboard({ user }) {
   const [filters, setFilters] = useState({
@@ -12,14 +11,18 @@ export default function Dashboard({ user }) {
     pincode: '',
     address: '',
   })
+  const [voters, setVoters] = useState([])
+  const [totalVoters, setTotalVoters] = useState(0)
   const [calledVoters, setCalledVoters] = useState(new Set())
   const [loading, setLoading] = useState(false)
+  const [searchLoading, setSearchLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
 
-  // Load user's called voters and ensure profile exists
+  // Load initial data
   useEffect(() => {
     ensureProfileExists()
     loadCalledVoters()
+    loadTotalVoters()
   }, [user])
 
   const ensureProfileExists = async () => {
@@ -36,11 +39,21 @@ export default function Dashboard({ user }) {
           .insert([{ id: user.id, display_name: user.email.split('@')[0] }])
       }
     } catch (err) {
-      // Profile doesn't exist, create it
       await supabase
         .from('user_profiles')
         .insert([{ id: user.id, display_name: user.email.split('@')[0] }])
-        .catch(() => {}) // Ignore if already exists
+        .catch(() => {})
+    }
+  }
+
+  const loadTotalVoters = async () => {
+    try {
+      const { count } = await supabase
+        .from('voters')
+        .select('*', { count: 'exact', head: true })
+      setTotalVoters(count || 0)
+    } catch (err) {
+      console.error('Error loading total voters:', err)
     }
   }
 
@@ -62,37 +75,63 @@ export default function Dashboard({ user }) {
     }
   }
 
-  // Filter voters based on current filters
-  const filteredVoters = useMemo(() => {
+  // Search voters from database
+  const searchVoters = async (searchFilters) => {
     const hasFilters =
-      filters.firstName || filters.lastName || filters.pincode || filters.address
+      searchFilters.firstName || searchFilters.lastName ||
+      searchFilters.pincode || searchFilters.address
 
     if (!hasFilters) {
-      return [] // Don't show any voters until filters are applied
+      setVoters([])
+      return
     }
 
-    return votersData.filter((voter) => {
-      const firstNameMatch =
-        !filters.firstName ||
-        voter.firstName?.toUpperCase().includes(filters.firstName.toUpperCase())
+    setSearchLoading(true)
+    try {
+      let query = supabase.from('voters').select('*')
 
-      const lastNameMatch =
-        !filters.lastName ||
-        voter.lastName?.toUpperCase().includes(filters.lastName.toUpperCase())
+      if (searchFilters.firstName) {
+        query = query.ilike('first_name', `%${searchFilters.firstName}%`)
+      }
+      if (searchFilters.lastName) {
+        query = query.ilike('last_name', `%${searchFilters.lastName}%`)
+      }
+      if (searchFilters.pincode) {
+        query = query.ilike('pincode', `%${searchFilters.pincode}%`)
+      }
+      if (searchFilters.address) {
+        query = query.ilike('address', `%${searchFilters.address}%`)
+      }
 
-      const pincodeMatch =
-        !filters.pincode || voter.pincode?.includes(filters.pincode)
+      query = query.limit(500)
 
-      const addressMatch =
-        !filters.address ||
-        voter.address?.toUpperCase().includes(filters.address.toUpperCase())
+      const { data, error } = await query
 
-      return firstNameMatch && lastNameMatch && pincodeMatch && addressMatch
-    })
-  }, [filters])
+      if (error) throw error
+
+      // Transform to match expected format
+      const formattedVoters = data.map(v => ({
+        id: v.id,
+        firstName: v.first_name,
+        lastName: v.last_name,
+        fullName: v.full_name,
+        contact: v.contact,
+        address: v.address,
+        pincode: v.pincode,
+        city: v.city
+      }))
+
+      setVoters(formattedVoters)
+    } catch (err) {
+      console.error('Error searching voters:', err)
+    } finally {
+      setSearchLoading(false)
+    }
+  }
 
   const handleFilter = (newFilters) => {
     setFilters(newFilters)
+    searchVoters(newFilters)
   }
 
   const handleToggleCall = async (voterId) => {
@@ -101,7 +140,6 @@ export default function Dashboard({ user }) {
 
     try {
       if (isCalled) {
-        // Remove call record
         const { error } = await supabase
           .from('call_records')
           .delete()
@@ -116,7 +154,6 @@ export default function Dashboard({ user }) {
           return next
         })
       } else {
-        // Add call record
         const { error } = await supabase.from('call_records').insert([
           {
             user_id: user.id,
@@ -145,16 +182,23 @@ export default function Dashboard({ user }) {
     )
   }
 
+  const hasFilters = filters.firstName || filters.lastName || filters.pincode || filters.address
+
   return (
     <div className="dashboard">
       <Navbar user={user} callCount={calledVoters.size} />
 
       <main className="dashboard-content">
-        <VoterFilter onFilter={handleFilter} totalVoters={votersData.length} />
+        <VoterFilter onFilter={handleFilter} totalVoters={totalVoters} />
 
-        {filters.firstName || filters.lastName || filters.pincode || filters.address ? (
+        {searchLoading ? (
+          <div className="loading-screen">
+            <div className="spinner"></div>
+            <p>Searching voters...</p>
+          </div>
+        ) : hasFilters ? (
           <VoterList
-            voters={filteredVoters}
+            voters={voters}
             calledVoters={calledVoters}
             onToggleCall={handleToggleCall}
             loading={loading}
