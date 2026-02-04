@@ -460,6 +460,14 @@ body {
   background: var(--primary-hover);
 }
 
+.btn-export-docx {
+  background: #7c3aed;
+}
+
+.btn-export-docx:hover {
+  background: #6d28d9;
+}
+
 .metadata-toggle {
   display: flex;
   align-items: center;

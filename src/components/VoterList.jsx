@@ -1,5 +1,5 @@
 import { useState, Fragment } from 'react'
-import { exportVotersToPdf, exportVotersToListPdf } from '../utils/exportPdf'
+import { exportVotersToPdf, exportVotersToListPdf, exportVotersToListDocx } from '../utils/exportPdf'
 
 export default function VoterList({ voters, calledVoters, onToggleCall, loading, filters }) {
   const [currentPage, setCurrentPage] = useState(1)
@@ -29,6 +29,10 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading,
     exportVotersToListPdf(voters, filters || {})
   }
 
+  const handleExportDocx = () => {
+    exportVotersToListDocx(voters, filters || {})
+  }
+
   if (voters.length === 0) {
     return (
       <div className="voter-list-empty">
@@ -50,6 +54,9 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading,
           </button>
           <button onClick={handleExportListPdf} className="btn-export btn-export-list">
             Export List
+          </button>
+          <button onClick={handleExportDocx} className="btn-export btn-export-docx">
+            Export DOCX
           </button>
           <label className="metadata-toggle">
             <input
