@@ -1,6 +1,7 @@
 import { useState, Fragment } from 'react'
+import { exportVotersToPdf, exportVotersToListPdf } from '../utils/exportPdf'
 
-export default function VoterList({ voters, calledVoters, onToggleCall, loading }) {
+export default function VoterList({ voters, calledVoters, onToggleCall, loading, filters }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [showMetadata, setShowMetadata] = useState(false)
   const [expandedVoter, setExpandedVoter] = useState(null)
@@ -20,6 +21,14 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading 
     setExpandedVoter(expandedVoter === voterId ? null : voterId)
   }
 
+  const handleExportPdf = () => {
+    exportVotersToPdf(voters, filters || {})
+  }
+
+  const handleExportListPdf = () => {
+    exportVotersToListPdf(voters, filters || {})
+  }
+
   if (voters.length === 0) {
     return (
       <div className="voter-list-empty">
@@ -36,6 +45,12 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading 
           {voters.length.toLocaleString()} voters
         </h3>
         <div className="header-actions">
+          <button onClick={handleExportPdf} className="btn-export">
+            Export Table
+          </button>
+          <button onClick={handleExportListPdf} className="btn-export btn-export-list">
+            Export List
+          </button>
           <label className="metadata-toggle">
             <input
               type="checkbox"

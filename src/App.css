@@ -428,6 +428,38 @@ body {
   gap: 1.5rem;
 }
 
+.btn-export {
+  padding: 0.5rem 1rem;
+  background: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-export:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
+.btn-export-list {
+  background: var(--primary-color);
+}
+
+.btn-export-list:hover {
+  background: var(--primary-hover);
+}
+
 .metadata-toggle {
   display: flex;
   align-items: center;

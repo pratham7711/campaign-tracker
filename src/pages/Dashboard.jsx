@@ -207,6 +207,7 @@ export default function Dashboard({ user, onLogout }) {
             calledVoters={calledVoters}
             onToggleCall={handleToggleCall}
             loading={loading}
+            filters={filters}
           />
         ) : (
           <div className="no-filter-message">
