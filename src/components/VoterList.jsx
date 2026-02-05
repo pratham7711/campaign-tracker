@@ -1,7 +1,7 @@
 import { useState, Fragment } from 'react'
 import { exportVotersToPdf, exportVotersToListPdf, exportVotersToListDocx } from '../utils/exportPdf'
 
-export default function VoterList({ voters, calledVoters, onToggleCall, loading, filters }) {
+export default function VoterList({ voters, calledVoters, onToggleCall, onExport, loading, filters }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [showMetadata, setShowMetadata] = useState(false)
   const [expandedVoter, setExpandedVoter] = useState(null)
@@ -23,14 +23,17 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading,
 
   const handleExportPdf = () => {
     exportVotersToPdf(voters, filters || {})
+    onExport?.('pdf_table')
   }
 
   const handleExportListPdf = () => {
     exportVotersToListPdf(voters, filters || {})
+    onExport?.('pdf_list')
   }
 
   const handleExportDocx = () => {
     exportVotersToListDocx(voters, filters || {})
+    onExport?.('docx')
   }
 
   if (voters.length === 0) {
@@ -49,14 +52,17 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading,
           {voters.length.toLocaleString()} voters
         </h3>
         <div className="header-actions">
-          <button onClick={handleExportPdf} className="btn-export">
-            Export Table
+          <button onClick={handleExportPdf} className="btn-export" title="Export as PDF Table">
+            <span className="btn-text-full">Export Table</span>
+            <span className="btn-text-short">PDF</span>
           </button>
-          <button onClick={handleExportListPdf} className="btn-export btn-export-list">
-            Export List
+          <button onClick={handleExportListPdf} className="btn-export btn-export-list" title="Export as PDF List">
+            <span className="btn-text-full">Export List</span>
+            <span className="btn-text-short">List</span>
           </button>
-          <button onClick={handleExportDocx} className="btn-export btn-export-docx">
-            Export DOCX
+          <button onClick={handleExportDocx} className="btn-export btn-export-docx" title="Export as DOCX">
+            <span className="btn-text-full">Export DOCX</span>
+            <span className="btn-text-short">DOCX</span>
           </button>
           <label className="metadata-toggle">
             <input
@@ -64,10 +70,13 @@ export default function VoterList({ voters, calledVoters, onToggleCall, loading,
               checked={showMetadata}
               onChange={(e) => setShowMetadata(e.target.checked)}
             />
-            Show Raw Data
+            <span className="toggle-text-full">Show Raw Data</span>
+            <span className="toggle-text-short">Raw</span>
           </label>
           <span className="called-count">
-            Called: {calledVoters.size} / {voters.length}
+            <span className="called-text-full">Called: </span>
+            <span className="called-text-short">✓ </span>
+            {calledVoters.size} / {voters.length}
           </span>
         </div>
       </div>

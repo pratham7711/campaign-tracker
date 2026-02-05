@@ -13,6 +13,7 @@ export default function Dashboard({ user, onLogout }) {
   const [voters, setVoters] = useState([])
   const [totalVoters, setTotalVoters] = useState(0)
   const [calledVoters, setCalledVoters] = useState(new Set())
+  const [exportCount, setExportCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [searchLoading, setSearchLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
@@ -22,6 +23,7 @@ export default function Dashboard({ user, onLogout }) {
     ensureProfileExists()
     loadCalledVoters()
     loadTotalVoters()
+    loadExportCount()
   }, [user])
 
   const ensureProfileExists = async () => {
@@ -74,6 +76,39 @@ export default function Dashboard({ user, onLogout }) {
       console.error('Error loading called voters:', err)
     } finally {
       setInitialLoading(false)
+    }
+  }
+
+  const loadExportCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('export_records')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (error) throw error
+      setExportCount(count || 0)
+    } catch (err) {
+      console.error('Error loading export count:', err)
+      // Table might not exist yet, that's okay
+    }
+  }
+
+  const handleExport = async (exportType) => {
+    try {
+      const { error } = await supabase.from('export_records').insert([
+        {
+          user_id: user.id,
+          export_type: exportType,
+        },
+      ])
+
+      if (error) throw error
+      setExportCount((prev) => prev + 1)
+    } catch (err) {
+      console.error('Error recording export:', err)
+      // Still increment locally even if DB fails
+      setExportCount((prev) => prev + 1)
     }
   }
 
@@ -191,7 +226,7 @@ export default function Dashboard({ user, onLogout }) {
 
   return (
     <div className="dashboard">
-      <Navbar user={user} callCount={calledVoters.size} onLogout={onLogout} />
+      <Navbar user={user} callCount={calledVoters.size} exportCount={exportCount} onLogout={onLogout} />
 
       <main className="dashboard-content">
         <VoterFilter onFilter={handleFilter} totalVoters={totalVoters} />
@@ -206,6 +241,7 @@ export default function Dashboard({ user, onLogout }) {
             voters={voters}
             calledVoters={calledVoters}
             onToggleCall={handleToggleCall}
+            onExport={handleExport}
             loading={loading}
             filters={filters}
           />

@@ -211,13 +211,33 @@ body {
   color: var(--primary-color);
 }
 
+/* Navbar responsive text - default show full */
+.brand-short,
+.calls-label-short,
+.logout-short {
+  display: none;
+}
+
+.brand-full,
+.calls-label-full,
+.logout-full {
+  display: inline;
+}
+
 .navbar-info {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
-.call-count {
+.stats-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.call-count,
+.export-count {
   background: var(--background);
   padding: 0.5rem 1rem;
   border-radius: 20px;
@@ -226,6 +246,19 @@ body {
 
 .call-count strong {
   color: var(--primary-color);
+}
+
+.export-count strong {
+  color: var(--success-color);
+}
+
+/* Stats responsive text - default show full */
+.stats-label-short {
+  display: none;
+}
+
+.stats-label-full {
+  display: inline;
 }
 
 .user-email {
@@ -441,6 +474,19 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Responsive text helpers - default show full, hide short */
+.btn-text-short,
+.toggle-text-short,
+.called-text-short {
+  display: none;
+}
+
+.btn-text-full,
+.toggle-text-full,
+.called-text-full {
+  display: inline;
 }
 
 .btn-export:hover {
@@ -681,21 +727,40 @@ body {
   background: var(--primary-hover);
 }
 
-/* Responsive */
+/* Responsive - Tablet (768px and below) */
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-brand h1 {
+    font-size: 1.125rem;
   }
 
   .navbar-info {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .stats-group {
+    gap: 0.5rem;
+  }
+
+  .call-count,
+  .export-count {
+    padding: 0.375rem 0.75rem;
   }
 
   .dashboard-content {
     padding: 1rem;
+  }
+
+  .filter-container {
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
 
   .filter-grid {
@@ -709,15 +774,395 @@ body {
   .filter-actions .btn-primary,
   .filter-actions .btn-secondary {
     width: 100%;
+    padding: 0.875rem;
+    min-height: 48px;
   }
 
   .voter-list-header {
     flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .btn-export {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+    padding: 0.625rem 0.75rem;
+    min-height: 44px;
+  }
+
+  .metadata-toggle {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem;
+    background: var(--background);
+    border-radius: 6px;
   }
 
   .col-address {
     display: none;
+  }
+
+  .col-pincode {
+    display: none;
+  }
+
+  .voter-list th,
+  .voter-list td {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .col-name {
+    min-width: 150px;
+  }
+
+  .col-contact {
+    min-width: 100px;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .btn-page {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .leaderboard-page {
+    padding: 1rem;
+  }
+
+  .leaderboard-container {
+    padding: 1.5rem;
+  }
+
+  .leaderboard-container h1 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Responsive - Mobile (480px and below) */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+
+  .navbar {
+    padding: 0.625rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .navbar-brand h1 {
+    font-size: 1rem;
+  }
+
+  .navbar-info {
+    gap: 0.5rem;
+  }
+
+  .stats-group {
+    gap: 0.375rem;
+  }
+
+  .call-count,
+  .export-count {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .user-email {
+    font-size: 0.8rem;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .btn-logout {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  /* Show short navbar text on mobile */
+  .brand-short,
+  .logout-short {
+    display: inline;
+  }
+
+  .brand-full,
+  .logout-full {
+    display: none;
+  }
+
+  /* Show icons for stats on mobile */
+  .stats-label-short {
+    display: inline;
+  }
+
+  .stats-label-full {
+    display: none;
+  }
+
+  .dashboard-content {
+    padding: 0.75rem;
+  }
+
+  .filter-container {
+    padding: 0.875rem;
+    border-radius: 8px;
+  }
+
+  .filter-container h2 {
+    font-size: 1rem;
+  }
+
+  .filter-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 0.625rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+    min-height: 44px;
+  }
+
+  .voter-list-container {
+    border-radius: 8px;
+  }
+
+  .voter-list-header {
+    padding: 0.75rem;
+  }
+
+  .voter-list-header h3 {
+    font-size: 0.8rem;
+  }
+
+  .header-actions {
+    gap: 0.5rem;
+  }
+
+  .btn-export {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    flex: 1 1 calc(50% - 0.25rem);
+  }
+
+  /* Show short text, hide full text on mobile */
+  .btn-text-short,
+  .toggle-text-short,
+  .called-text-short {
+    display: inline;
+  }
+
+  .btn-text-full,
+  .toggle-text-full,
+  .called-text-full {
+    display: none;
+  }
+
+  .metadata-toggle {
+    font-size: 0.8rem;
+    padding: 0.375rem;
+  }
+
+  .voter-list th,
+  .voter-list td {
+    padding: 0.5rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .voter-list th {
+    font-size: 0.65rem;
+  }
+
+  .col-checkbox {
+    width: 40px;
+  }
+
+  .col-checkbox input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .col-name {
+    min-width: 120px;
+  }
+
+  .voter-name {
+    font-size: 0.875rem;
+  }
+
+  .voter-id {
+    font-size: 0.7rem;
+  }
+
+  .col-contact {
+    min-width: 90px;
+  }
+
+  .phone-link {
+    font-size: 0.8rem;
+  }
+
+  .col-metadata {
+    min-width: 60px;
+  }
+
+  .btn-expand {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .metadata-content {
+    padding: 0.75rem;
+    font-size: 0.75rem;
+    margin: 0.375rem 0.5rem;
+    max-height: 150px;
+  }
+
+  .pagination {
+    padding: 0.75rem 0.5rem;
+    gap: 0.375rem;
+  }
+
+  .btn-page {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8rem;
+    min-height: 40px;
+    min-width: 40px;
+  }
+
+  .page-info {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .voter-list-empty,
+  .no-filter-message {
+    padding: 2rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .leaderboard-page {
+    padding: 0.75rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+
+  .leaderboard-container {
+    padding: 1rem;
+  }
+
+  .leaderboard-container h1 {
+    font-size: 1.125rem;
+  }
+
+  .leaderboard-subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .leaderboard-table th {
+    font-size: 0.65rem;
+  }
+
+  .leaderboard-table .col-rank {
+    width: 50px;
+  }
+
+  .leaderboard-table .col-calls {
+    width: 80px;
+  }
+
+  .medal {
+    font-size: 1rem;
+  }
+
+  .btn-back {
+    padding: 0.875rem;
+    font-size: 0.875rem;
+    margin-top: 1.5rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+  }
+
+  .auth-card h1 {
+    font-size: 1.25rem;
+  }
+
+  .auth-card h2 {
+    font-size: 1rem;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-export,
+  .btn-page,
+  .btn-logout,
+  .btn-expand,
+  .btn-back {
+    min-height: 44px;
+  }
+
+  .col-checkbox input[type='checkbox'],
+  .metadata-toggle input[type='checkbox'] {
+    width: 22px;
+    height: 22px;
+  }
+
+  .phone-link {
+    padding: 0.25rem 0;
+    display: inline-block;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+  .navbar {
+    flex-direction: row;
+    padding: 0.5rem 1rem;
+  }
+
+  .navbar-info {
+    gap: 0.75rem;
+  }
+
+  .leaderboard-page {
+    align-items: flex-start;
+    padding-top: 1rem;
+  }
+
+  .auth-container {
+    padding: 0.5rem;
+  }
+
+  .auth-card {
+    padding: 1rem 1.5rem;
   }
 }
