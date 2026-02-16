@@ -4,8 +4,11 @@ import { supabase } from '../supabaseClient'
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([])
+  const [calledVoters, setCalledVoters] = useState([])
+  const [totalCalls, setTotalCalls] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showCalledList, setShowCalledList] = useState(false)
 
   useEffect(() => {
     loadLeaderboard()
@@ -15,13 +18,48 @@ export default function Leaderboard() {
     try {
       console.log('Loading leaderboard...')
 
-      // Get call counts per user
+      // Get call records
       const { data: callData, error: callError } = await supabase
         .from('call_records')
-        .select('user_id')
+        .select('user_id, voter_id')
 
       console.log('Call data:', callData, 'Error:', callError)
       if (callError) throw callError
+
+      // Set total calls
+      setTotalCalls(callData?.length || 0)
+
+      // Get voter details for called voters
+      const voterIds = [...new Set((callData || []).map(r => r.voter_id))]
+      let votersMap = {}
+
+      if (voterIds.length > 0) {
+        const { data: votersData, error: votersError } = await supabase
+          .from('voters')
+          .select('id, full_name, contact')
+          .in('id', voterIds)
+
+        if (!votersError && votersData) {
+          votersData.forEach(v => {
+            votersMap[v.id] = v
+          })
+        }
+      }
+
+      // Build called voters list (unique voters only)
+      const seenVoters = new Set()
+      const votersList = (callData || [])
+        .filter(record => {
+          if (seenVoters.has(record.voter_id) || !votersMap[record.voter_id]) return false
+          seenVoters.add(record.voter_id)
+          return true
+        })
+        .map(record => ({
+          id: record.voter_id,
+          name: votersMap[record.voter_id].full_name,
+          contact: votersMap[record.voter_id].contact
+        }))
+      setCalledVoters(votersList)
 
       // Count calls per user
       const callCounts = {}
@@ -87,6 +125,11 @@ export default function Leaderboard() {
         <h1>Campaign Leaderboard</h1>
         <p className="leaderboard-subtitle">Top performers by calls made</p>
 
+        <div className="total-calls-banner">
+          <span className="total-calls-number">{totalCalls.toLocaleString()}</span>
+          <span className="total-calls-label">Total Calls Made</span>
+        </div>
+
         {leaderboard.length === 0 ? (
           <div className="leaderboard-empty">
             <p>No data yet. Start making calls to appear on the leaderboard!</p>
@@ -127,6 +170,40 @@ export default function Leaderboard() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {calledVoters.length > 0 && (
+          <div className="called-voters-section">
+            <button
+              className="btn-toggle-list"
+              onClick={() => setShowCalledList(!showCalledList)}
+            >
+              {showCalledList ? 'Hide' : 'Show'} Called Voters List ({calledVoters.length})
+            </button>
+
+            {showCalledList && (
+              <div className="called-voters-list">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Contact</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calledVoters.map((voter, index) => (
+                      <tr key={`${voter.id}-${index}`}>
+                        <td>{index + 1}</td>
+                        <td>{voter.name}</td>
+                        <td>{voter.contact || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

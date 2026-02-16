@@ -115,7 +115,16 @@ export default function VoterList({ voters, calledVoters, onToggleCall, onExport
                     </td>
                     <td className="col-contact">
                       {voter.contact ? (
-                        <a href={`tel:${voter.contact}`} className="phone-link">
+                        <a
+                          href={`tel:${voter.contact}`}
+                          className="phone-link"
+                          onClick={() => {
+                            // Auto-mark as called when phone number is clicked
+                            if (!isCalled) {
+                              onToggleCall(voter.id)
+                            }
+                          }}
+                        >
                           {voter.contact}
                         </a>
                       ) : (

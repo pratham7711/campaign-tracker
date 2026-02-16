@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Auth from './components/Auth'
 import Dashboard from './pages/Dashboard'
 import Leaderboard from './pages/Leaderboard'
+import GetVoterSlip from './pages/GetVoterSlip'
 import './App.css'
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
           }
         />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/getyourvoterslip" element={<GetVoterSlip />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
