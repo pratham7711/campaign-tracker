@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 
 export default function GetVoterSlip() {
@@ -187,33 +186,62 @@ Get your voter slip: ${window.location.href}`
 
   return (
     <div className="voter-slip-page">
-      <div className="voter-slip-container">
-        <div className="candidate-banner">
-          <div className="candidate-photo">
-            <img src="/profile.png" alt="Dev Raj Sharma" />
+      {/* Left Panel - Candidate Hero */}
+      <div className="candidate-hero-panel">
+        <div className="hero-content">
+          <div className="hero-badge">BCD Election 2026</div>
+          <div className="candidate-photo-wrapper">
+            <div className="photo-ring"></div>
+            <div className="photo-ring ring-2"></div>
+            <img src="/profile.png" alt="Dev Raj Sharma" className="candidate-photo" />
           </div>
-          <div className="candidate-info">
-            <h2>DEV RAJ SHARMA</h2>
-            <p className="candidate-designation">Advocate, Supreme Court of India</p>
-            <p className="ballot-number">Ballot No. 63</p>
+          <div className="candidate-details">
+            <h1 className="candidate-name">DEV RAJ SHARMA</h1>
+            <p className="candidate-title">Advocate, Supreme Court of India</p>
+            <div className="ballot-badge">
+              <span className="ballot-label">Ballot No.</span>
+              <span className="ballot-num">63</span>
+            </div>
+          </div>
+          <div className="hero-tagline">
+            <p>Your vote matters. Find your details and exercise your right.</p>
           </div>
         </div>
-
-        <h1>Get Your Voter Slip</h1>
-        <p className="slip-subtitle">BCD Election 2026 - Electoral Roll Lookup</p>
-
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search by name, phone, or registration (D/...)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <p className="search-hints">
-            Try: Phone (9810027994), Name (Rajinder), Registration (D/46/1958)
-          </p>
+        <div className="hero-decoration">
+          <div className="deco-circle deco-1"></div>
+          <div className="deco-circle deco-2"></div>
+          <div className="deco-circle deco-3"></div>
         </div>
+      </div>
+
+      {/* Right Panel - Search */}
+      <div className="search-panel">
+        <div className="search-panel-content">
+          <div className="search-header">
+            <h2>Get Your Voter Slip</h2>
+            <p>Search the electoral roll to find and download your voter slip</p>
+          </div>
+
+          <div className="search-box">
+            <div className="search-input-wrapper">
+              <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search by name, phone, or registration..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <div className="search-tags">
+              <span className="search-tag" onClick={() => setSearchQuery('9810027994')}>Phone</span>
+              <span className="search-tag" onClick={() => setSearchQuery('Rajinder')}>Name</span>
+              <span className="search-tag" onClick={() => setSearchQuery('D/46/1958')}>Registration</span>
+            </div>
+          </div>
 
         {loading && (
           <div className="search-loading">
@@ -284,9 +312,7 @@ Get your voter slip: ${window.location.href}`
           </div>
         )}
 
-        <Link to="/" className="btn-back">
-          Back to Dashboard
-        </Link>
+        </div>
       </div>
 
       {/* Voter Details Modal */}
