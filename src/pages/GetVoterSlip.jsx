@@ -7,6 +7,7 @@ export default function GetVoterSlip() {
   const [results, setResults] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedVoter, setSelectedVoter] = useState(null)
+  const [viewMode, setViewMode] = useState('slip') // 'slip', 'photo', 'qr'
 
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
@@ -68,14 +69,28 @@ export default function GetVoterSlip() {
 
   const handleViewDetails = (voter) => {
     setSelectedVoter(voter)
+    setViewMode('slip')
+  }
+
+  const handleViewPhoto = (voter) => {
+    setSelectedVoter(voter)
+    setViewMode('photo')
+  }
+
+  const handleViewQR = (voter) => {
+    setSelectedVoter(voter)
+    setViewMode('qr')
   }
 
   const closeModal = () => {
     setSelectedVoter(null)
+    setViewMode('slip')
   }
 
   const generateSlipHTML = (voter) => {
     const meta = parseMetadata(voter.metadata)
+    // Get the base URL for the candidate image
+    const candidateImageUrl = `${window.location.origin}/profile.png`
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -87,8 +102,8 @@ export default function GetVoterSlip() {
     .slip { max-width: 550px; margin: 0 auto; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
     .top-row { display: flex; align-items: stretch; border-bottom: 2px solid #e5e7eb; background: #f8fafc; }
     .serial { width: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: #dc2626; border-right: 2px solid #e5e7eb; padding: 12px; }
-    .name { flex: 1; padding: 12px 16px; font-size: 1.1rem; font-weight: 700; color: #1f2937; }
-    .registration { padding: 12px 16px; font-size: 1rem; font-weight: 600; color: #2563eb; border-left: 2px solid #e5e7eb; background: #eff6ff; }
+    .name { flex: 1; padding: 12px 16px; font-size: 1.1rem; font-weight: 700; color: #1f2937; display: flex; align-items: center; }
+    .registration { padding: 12px 16px; font-size: 1rem; font-weight: 600; color: #2563eb; border-left: 2px solid #e5e7eb; background: #eff6ff; display: flex; align-items: center; }
     .main-row { display: flex; align-items: stretch; min-height: 120px; }
     .qr-section { width: 100px; padding: 12px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #e5e7eb; }
     .qr-section img { width: 85px; height: 85px; object-fit: contain; }
@@ -97,8 +112,13 @@ export default function GetVoterSlip() {
     .info-section strong { color: #1f2937; }
     .photo-section { width: 90px; padding: 12px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #e5e7eb; }
     .photo-section img { width: 71px; height: 89px; object-fit: cover; border-radius: 4px; border: 1px solid #d1d5db; }
-    .vote-appeal { background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 12px 16px; text-align: center; font-size: 0.95rem; }
-    .vote-appeal strong { color: #fbbf24; }
+    .vote-appeal { background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white; padding: 16px; }
+    .candidate-section { display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .candidate-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .candidate-details { text-align: left; }
+    .vote-text { font-size: 0.85rem; opacity: 0.9; margin-bottom: 2px; }
+    .candidate-name { font-size: 1.2rem; font-weight: 800; color: #fbbf24; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .ballot-number { font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); padding: 4px 12px; border-radius: 15px; display: inline-block; }
     @media print { body { padding: 0; background: #fff; } .slip { border: 1px solid #000; } }
   </style>
 </head>
@@ -122,7 +142,14 @@ export default function GetVoterSlip() {
       </div>
     </div>
     <div class="vote-appeal">
-      <p>Vote for: <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong></p>
+      <div class="candidate-section">
+        <img src="${candidateImageUrl}" alt="Dev Raj Sharma" class="candidate-photo">
+        <div class="candidate-details">
+          <p class="vote-text">Vote for</p>
+          <p class="candidate-name">DEV RAJ SHARMA</p>
+          <p class="ballot-number">Ballot No. 63</p>
+        </div>
+      </div>
     </div>
   </div>
   <p style="text-align:center;margin-top:20px;color:#666;font-size:12px;">Press Ctrl+P to print or save as PDF</p>
@@ -162,6 +189,9 @@ Get your voter slip: ${window.location.href}`
     <div className="voter-slip-page">
       <div className="voter-slip-container">
         <div className="candidate-banner">
+          <div className="candidate-photo">
+            <img src="/profile.png" alt="Dev Raj Sharma" />
+          </div>
           <div className="candidate-info">
             <h2>DEV RAJ SHARMA</h2>
             <p className="candidate-designation">Advocate, Supreme Court of India</p>
@@ -214,12 +244,32 @@ Get your voter slip: ${window.location.href}`
                       <p className="result-registration">{meta.registration || 'N/A'}</p>
                       <p className="result-contact">{voter.contact || 'No contact'}</p>
                     </div>
-                    <button
-                      className="btn-view-details"
-                      onClick={() => handleViewDetails(voter)}
-                    >
-                      View Slip
-                    </button>
+                    <div className="result-actions">
+                      {voter.photo_url && (
+                        <button
+                          className="btn-view-photo"
+                          onClick={() => handleViewPhoto(voter)}
+                          title="View Photo"
+                        >
+                          Photo
+                        </button>
+                      )}
+                      {voter.qr_code_url && (
+                        <button
+                          className="btn-view-qr"
+                          onClick={() => handleViewQR(voter)}
+                          title="View QR Code"
+                        >
+                          QR
+                        </button>
+                      )}
+                      <button
+                        className="btn-view-details"
+                        onClick={() => handleViewDetails(voter)}
+                      >
+                        View Slip
+                      </button>
+                    </div>
                   </div>
                 )
               })}
@@ -242,76 +292,169 @@ Get your voter slip: ${window.location.href}`
       {/* Voter Details Modal */}
       {selectedVoter && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content slip-modal" onClick={(e) => e.stopPropagation()}>
+          <div className={`modal-content ${viewMode === 'slip' ? 'slip-modal' : 'media-modal'}`} onClick={(e) => e.stopPropagation()}>
             <button className="modal-close" onClick={closeModal}>×</button>
 
-            {/* Voter Slip Card - Matching PDF Layout */}
-            <div className="voter-slip-card-new">
-              {/* Top Row: Serial | Name | Registration */}
-              <div className="slip-top-row">
-                <div className="slip-serial">
-                  {parseMetadata(selectedVoter.metadata).serial || '—'}
-                </div>
-                <div className="slip-name">
-                  {selectedVoter.full_name}
-                </div>
-                <div className="slip-registration">
-                  {parseMetadata(selectedVoter.metadata).registration || 'N/A'}
-                </div>
-              </div>
+            {/* View Mode Tabs */}
+            <div className="modal-tabs">
+              <button
+                className={`modal-tab ${viewMode === 'slip' ? 'active' : ''}`}
+                onClick={() => setViewMode('slip')}
+              >
+                Full Slip
+              </button>
+              {selectedVoter.photo_url && (
+                <button
+                  className={`modal-tab ${viewMode === 'photo' ? 'active' : ''}`}
+                  onClick={() => setViewMode('photo')}
+                >
+                  Photo
+                </button>
+              )}
+              {selectedVoter.qr_code_url && (
+                <button
+                  className={`modal-tab ${viewMode === 'qr' ? 'active' : ''}`}
+                  onClick={() => setViewMode('qr')}
+                >
+                  QR Code
+                </button>
+              )}
+            </div>
 
-              {/* Main Content: QR | Info | Photo */}
-              <div className="slip-main-row">
-                <div className="slip-qr-section">
-                  {selectedVoter.qr_code_url ? (
-                    <img
-                      src={selectedVoter.qr_code_url}
-                      alt="QR Code"
-                      onError={(e) => { e.target.style.display = 'none' }}
-                    />
-                  ) : (
-                    <div className="slip-qr-placeholder"></div>
-                  )}
+            {/* Photo View */}
+            {viewMode === 'photo' && (
+              <div className="media-view photo-view">
+                <div className="media-header">
+                  <h3>{selectedVoter.full_name}</h3>
+                  <p>{parseMetadata(selectedVoter.metadata).registration || 'N/A'}</p>
                 </div>
-
-                <div className="slip-info-section">
-                  <p><strong>Contact:</strong> {selectedVoter.contact || 'N/A'}</p>
-                  <p><strong>Address:</strong> {selectedVoter.address || 'N/A'}</p>
-                </div>
-
-                <div className="slip-photo-section">
+                <div className="media-content">
                   {selectedVoter.photo_url ? (
                     <img
                       src={selectedVoter.photo_url}
                       alt={selectedVoter.full_name}
-                      onError={(e) => { e.target.style.display = 'none' }}
+                      className="large-photo"
                     />
                   ) : (
-                    <div className="slip-photo-placeholder"></div>
+                    <div className="no-media">No photo available</div>
                   )}
                 </div>
+                <div className="media-candidate-footer">
+                  <img src="/profile.png" alt="Dev Raj Sharma" />
+                  <div>
+                    <p>Vote for <strong>DEV RAJ SHARMA</strong></p>
+                    <p className="ballot-text">Ballot No. 63</p>
+                  </div>
+                </div>
               </div>
+            )}
 
-              {/* Vote Appeal */}
-              <div className="slip-vote-appeal">
-                <p>Vote for: <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong></p>
+            {/* QR Code View */}
+            {viewMode === 'qr' && (
+              <div className="media-view qr-view">
+                <div className="media-header">
+                  <h3>{selectedVoter.full_name}</h3>
+                  <p>{parseMetadata(selectedVoter.metadata).registration || 'N/A'}</p>
+                </div>
+                <div className="media-content">
+                  {selectedVoter.qr_code_url ? (
+                    <img
+                      src={selectedVoter.qr_code_url}
+                      alt="QR Code"
+                      className="large-qr"
+                    />
+                  ) : (
+                    <div className="no-media">No QR code available</div>
+                  )}
+                </div>
+                <div className="media-candidate-footer">
+                  <img src="/profile.png" alt="Dev Raj Sharma" />
+                  <div>
+                    <p>Vote for <strong>DEV RAJ SHARMA</strong></p>
+                    <p className="ballot-text">Ballot No. 63</p>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="modal-actions">
-              <button
-                className="btn-download"
-                onClick={() => handleDownloadSlip(selectedVoter)}
-              >
-                Download Slip
-              </button>
-              <button
-                className="btn-whatsapp"
-                onClick={() => handleShareWhatsApp(selectedVoter)}
-              >
-                Share on WhatsApp
-              </button>
-            </div>
+            {/* Full Slip View */}
+            {viewMode === 'slip' && (
+              <>
+                <div className="voter-slip-card-new">
+                  {/* Top Row: Serial | Name | Registration */}
+                  <div className="slip-top-row">
+                    <div className="slip-serial">
+                      {parseMetadata(selectedVoter.metadata).serial || '—'}
+                    </div>
+                    <div className="slip-name">
+                      {selectedVoter.full_name}
+                    </div>
+                    <div className="slip-registration">
+                      {parseMetadata(selectedVoter.metadata).registration || 'N/A'}
+                    </div>
+                  </div>
+
+                  {/* Main Content: QR | Info | Photo */}
+                  <div className="slip-main-row">
+                    <div className="slip-qr-section">
+                      {selectedVoter.qr_code_url ? (
+                        <img
+                          src={selectedVoter.qr_code_url}
+                          alt="QR Code"
+                          onError={(e) => { e.target.style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="slip-qr-placeholder"></div>
+                      )}
+                    </div>
+
+                    <div className="slip-info-section">
+                      <p><strong>Contact:</strong> {selectedVoter.contact || 'N/A'}</p>
+                      <p><strong>Address:</strong> {selectedVoter.address || 'N/A'}</p>
+                    </div>
+
+                    <div className="slip-photo-section">
+                      {selectedVoter.photo_url ? (
+                        <img
+                          src={selectedVoter.photo_url}
+                          alt={selectedVoter.full_name}
+                          onError={(e) => { e.target.style.display = 'none' }}
+                        />
+                      ) : (
+                        <div className="slip-photo-placeholder"></div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Vote Appeal with Candidate Photo */}
+                  <div className="slip-vote-appeal">
+                    <div className="slip-candidate-section">
+                      <img src="/profile.png" alt="Dev Raj Sharma" className="slip-candidate-photo" />
+                      <div className="slip-candidate-details">
+                        <p className="slip-vote-text">Vote for</p>
+                        <p className="slip-candidate-name">DEV RAJ SHARMA</p>
+                        <p className="slip-ballot-number">Ballot No. 63</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    className="btn-download"
+                    onClick={() => handleDownloadSlip(selectedVoter)}
+                  >
+                    Download Slip
+                  </button>
+                  <button
+                    className="btn-whatsapp"
+                    onClick={() => handleShareWhatsApp(selectedVoter)}
+                  >
+                    Share on WhatsApp
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
