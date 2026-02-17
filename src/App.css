@@ -1288,6 +1288,26 @@ body {
   font-size: 0.85rem;
 }
 
+/* Electoral Source Footer */
+.electoral-source-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.electoral-source-footer a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.electoral-source-footer a:hover {
+  text-decoration: underline;
+}
+
 /* Result Photo Thumbnail */
 .result-photo {
   flex-shrink: 0;

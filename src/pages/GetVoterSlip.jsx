@@ -313,6 +313,13 @@ Get your voter slip: ${window.location.href}`
         )}
 
         </div>
+
+        <div className="electoral-source-footer">
+          Electoral Roll data sourced from official website of Bar Council of Delhi:{' '}
+          <a href="https://delhibarcouncil.com/final_voter_list.php" target="_blank" rel="noopener noreferrer">
+            delhibarcouncil.com
+          </a>
+        </div>
       </div>
 
       {/* Voter Details Modal */}
