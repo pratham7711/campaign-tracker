@@ -86,9 +86,34 @@ export default function GetVoterSlip() {
     setViewMode('slip')
   }
 
-  const generateSlipHTML = (voter) => {
+  // Convert image URL to base64
+  const imageToBase64 = async (url) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
+    } catch (err) {
+      console.error('Failed to convert image:', err)
+      return null
+    }
+  }
+
+  const generateSlipHTML = async (voter) => {
     const meta = parseMetadata(voter.metadata)
-    const stampImageUrl = `${window.location.origin}/stamp.png`
+
+    // Convert all images to base64 for offline viewing
+    const [stampBase64, photoBase64, qrBase64, profileBase64] = await Promise.all([
+      imageToBase64('/stamp.png'),
+      voter.photo_url ? imageToBase64(voter.photo_url) : Promise.resolve(null),
+      voter.qr_code_url ? imageToBase64(voter.qr_code_url) : Promise.resolve(null),
+      imageToBase64('/profile.png')
+    ])
+
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -96,65 +121,263 @@ export default function GetVoterSlip() {
   <title>Voter Slip - ${voter.full_name}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    .slip { max-width: 450px; margin: 0 auto; background: #fff; border: 1px solid #000; }
-    .top-row { display: flex; align-items: center; border-bottom: 1px solid #000; }
-    .serial { min-width: 40px; padding: 6px 8px; font-size: 0.8rem; font-weight: 700; text-align: center; }
-    .name { flex: 1; padding: 6px 10px; font-size: 0.8rem; font-weight: 700; }
-    .registration { padding: 6px 10px; font-size: 0.75rem; font-weight: 600; }
-    .main-row { display: flex; align-items: flex-start; }
-    .qr-section { width: 116px; padding: 8px; }
-    .qr-section img { width: 106px; height: 106px; object-fit: contain; }
-    .info-section { flex: 1; padding: 8px 10px; }
-    .info-section p { font-size: 0.7rem; color: #000; line-height: 1.4; margin-bottom: 4px; }
-    .info-section span { font-weight: 600; }
-    .stamp { width: 110px; height: auto; object-fit: contain; margin-top: 6px; }
-    .photo-section { width: 107px; padding: 8px; }
-    .photo-section img { width: 97px; height: 119px; object-fit: cover; border: 1px solid #000; }
-    .vote-appeal { background: #1e293b; color: white; padding: 5px 10px; text-align: center; border-top: 1px solid #000; }
-    .vote-appeal p { font-size: 0.65rem; }
-    .vote-appeal strong { color: #fbbf24; }
-    @media print { body { padding: 0; background: #fff; } }
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container { max-width: 480px; width: 100%; }
+
+    /* Slip Card */
+    .slip {
+      border: 1px solid #000;
+      background: #fff;
+    }
+    .top-row {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #000;
+    }
+    .serial {
+      min-width: 40px;
+      padding: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      border-right: 1px solid #000;
+    }
+    .name {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .registration {
+      padding: 8px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #333;
+      border-left: 1px solid #000;
+    }
+    .main-row {
+      display: flex;
+      align-items: flex-start;
+    }
+    .qr-section {
+      width: 115px;
+      padding: 10px;
+      border-right: 1px solid #ddd;
+    }
+    .qr-section img {
+      width: 95px;
+      height: 95px;
+      object-fit: contain;
+    }
+    .qr-placeholder {
+      width: 95px;
+      height: 95px;
+      background: #f5f5f5;
+      border: 1px dashed #ccc;
+    }
+    .info-section {
+      flex: 1;
+      padding: 10px;
+    }
+    .info-section p {
+      font-size: 0.7rem;
+      color: #000;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .info-section span {
+      font-weight: 600;
+    }
+    .stamp {
+      width: 85px;
+      height: auto;
+      margin-top: 6px;
+    }
+    .photo-section {
+      width: 105px;
+      padding: 10px;
+      border-left: 1px solid #ddd;
+    }
+    .photo-section img {
+      width: 85px;
+      height: 105px;
+      object-fit: cover;
+      border: 1px solid #000;
+    }
+    .photo-placeholder {
+      width: 85px;
+      height: 105px;
+      background: #f5f5f5;
+      border: 1px dashed #ccc;
+    }
+
+    /* Vote Appeal */
+    .vote-appeal {
+      background: #1e293b;
+      color: #fff;
+      padding: 8px 12px;
+      text-align: center;
+      font-size: 0.7rem;
+    }
+    .vote-appeal strong {
+      color: #fbbf24;
+    }
+
+    /* Promotion Section */
+    .promotion {
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+      text-align: center;
+    }
+    .promotion-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    .promotion-header img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #1e293b;
+    }
+    .promotion-header-text h3 {
+      font-size: 1rem;
+      color: #1e293b;
+      margin-bottom: 2px;
+    }
+    .promotion-header-text .ballot {
+      display: inline-block;
+      background: #fbbf24;
+      color: #1e293b;
+      padding: 3px 10px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      border-radius: 3px;
+    }
+    .promotion-message {
+      font-size: 0.75rem;
+      color: #444;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .promotion-tagline {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+      font-style: italic;
+    }
+    .promotion-election {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: #666;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.65rem;
+      color: #999;
+    }
+
+    @media print {
+      body { padding: 10px; min-height: auto; }
+      .footer { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div class="slip">
-    <div class="top-row">
-      <div class="serial">${meta.serial || '—'}</div>
-      <div class="name">${voter.full_name}</div>
-      <div class="registration">${meta.registration || 'N/A'}</div>
+  <div class="container">
+    <!-- Voter Slip -->
+    <div class="slip">
+      <div class="top-row">
+        <div class="serial">${meta.serial || '—'}</div>
+        <div class="name">${voter.full_name}</div>
+        <div class="registration">${meta.registration || 'N/A'}</div>
+      </div>
+      <div class="main-row">
+        <div class="qr-section">
+          ${qrBase64 ? `<img src="${qrBase64}" alt="QR">` : '<div class="qr-placeholder"></div>'}
+        </div>
+        <div class="info-section">
+          <p><span>Contact:</span> ${voter.contact || 'N/A'}</p>
+          <p><span>Address:</span> ${voter.address || 'N/A'}</p>
+          ${stampBase64 ? `<img src="${stampBase64}" alt="Stamp" class="stamp">` : ''}
+        </div>
+        <div class="photo-section">
+          ${photoBase64 ? `<img src="${photoBase64}" alt="Photo">` : '<div class="photo-placeholder"></div>'}
+        </div>
+      </div>
+      <div class="vote-appeal">
+        Vote for <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong>
+      </div>
     </div>
-    <div class="main-row">
-      <div class="qr-section">
-        ${voter.qr_code_url ? `<img src="${voter.qr_code_url}" alt="QR">` : '<div style="width:106px;height:106px;background:#f5f5f5;border:1px dashed #ccc;"></div>'}
+
+    <!-- Promotion Section -->
+    <div class="promotion">
+      <div class="promotion-header">
+        ${profileBase64 ? `<img src="${profileBase64}" alt="Dev Raj Sharma">` : ''}
+        <div class="promotion-header-text">
+          <h3>DEV RAJ SHARMA</h3>
+          <span class="ballot">Ballot No. 63</span>
+        </div>
       </div>
-      <div class="info-section">
-        <p><span>Contact:</span> ${voter.contact || 'N/A'}</p>
-        <p><span>Address:</span> ${voter.address || 'N/A'}</p>
-        <img src="${stampImageUrl}" alt="Stamp" class="stamp">
-      </div>
-      <div class="photo-section">
-        ${voter.photo_url ? `<img src="${voter.photo_url}" alt="Photo">` : '<div style="width:97px;height:119px;background:#f5f5f5;border:1px dashed #ccc;"></div>'}
-      </div>
+      <p class="promotion-message">
+        With years of dedicated service to the legal community, Dev Raj Sharma is committed to transparency,
+        member welfare, and the professional growth of all advocates.
+      </p>
+      <p class="promotion-tagline">"Your Voice, Your Vote, Your Future"</p>
+      <p class="promotion-election">Bar Council of Delhi Election 2026</p>
     </div>
-    <div class="vote-appeal">
-      <p>Vote for <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong></p>
+
+    <div class="footer">
+      Press Ctrl+P to print or save as PDF
     </div>
   </div>
-  <p style="text-align:center;margin-top:20px;color:#666;font-size:11px;">Press Ctrl+P to print or save as PDF</p>
 </body>
 </html>`
   }
 
-  const handleDownloadSlip = (voter) => {
-    const html = generateSlipHTML(voter)
-    const blob = new Blob([html], { type: 'text/html' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `voter-slip-${voter.full_name.replace(/\s+/g, '-')}.html`
-    a.click()
-    URL.revokeObjectURL(url)
+  const handleDownloadSlip = async (voter) => {
+    // Show loading state
+    const button = document.querySelector('.btn-download')
+    const originalText = button?.textContent
+    if (button) {
+      button.textContent = 'Preparing...'
+      button.disabled = true
+    }
+
+    try {
+      const html = await generateSlipHTML(voter)
+      const blob = new Blob([html], { type: 'text/html' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `voter-slip-${voter.full_name.replace(/\s+/g, '-')}.html`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Download failed:', err)
+      alert('Failed to download slip. Please try again.')
+    } finally {
+      if (button) {
+        button.textContent = originalText
+        button.disabled = false
+      }
+    }
   }
 
   const handleShareWhatsApp = (voter) => {
