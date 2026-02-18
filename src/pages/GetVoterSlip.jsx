@@ -88,8 +88,7 @@ export default function GetVoterSlip() {
 
   const generateSlipHTML = (voter) => {
     const meta = parseMetadata(voter.metadata)
-    // Get the base URL for the candidate image
-    const candidateImageUrl = `${window.location.origin}/profile.png`
+    const stampImageUrl = `${window.location.origin}/stamp.png`
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -98,27 +97,24 @@ export default function GetVoterSlip() {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    .slip { max-width: 550px; margin: 0 auto; background: #fff; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
-    .top-row { display: flex; align-items: stretch; border-bottom: 2px solid #e5e7eb; background: #f8fafc; }
-    .serial { width: 50px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: #dc2626; border-right: 2px solid #e5e7eb; padding: 12px; }
-    .name { flex: 1; padding: 12px 16px; font-size: 1.1rem; font-weight: 700; color: #1f2937; display: flex; align-items: center; }
-    .registration { padding: 12px 16px; font-size: 1rem; font-weight: 600; color: #2563eb; border-left: 2px solid #e5e7eb; background: #eff6ff; display: flex; align-items: center; }
-    .main-row { display: flex; align-items: stretch; min-height: 120px; }
-    .qr-section { width: 100px; padding: 12px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #e5e7eb; }
-    .qr-section img { width: 85px; height: 85px; object-fit: contain; }
-    .info-section { flex: 1; padding: 12px 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px; }
-    .info-section p { font-size: 0.9rem; color: #374151; line-height: 1.4; }
-    .info-section strong { color: #1f2937; }
-    .photo-section { width: 90px; padding: 12px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #e5e7eb; }
-    .photo-section img { width: 71px; height: 89px; object-fit: cover; border-radius: 4px; border: 1px solid #d1d5db; }
-    .vote-appeal { background: linear-gradient(135deg, #1e3a5f, #2d5a87); color: white; padding: 16px; }
-    .candidate-section { display: flex; align-items: center; justify-content: center; gap: 16px; }
-    .candidate-photo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #fbbf24; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
-    .candidate-details { text-align: left; }
-    .vote-text { font-size: 0.85rem; opacity: 0.9; margin-bottom: 2px; }
-    .candidate-name { font-size: 1.2rem; font-weight: 800; color: #fbbf24; margin-bottom: 4px; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-    .ballot-number { font-size: 1rem; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); padding: 4px 12px; border-radius: 15px; display: inline-block; }
-    @media print { body { padding: 0; background: #fff; } .slip { border: 1px solid #000; } }
+    .slip { max-width: 450px; margin: 0 auto; background: #fff; border: 1px solid #000; }
+    .top-row { display: flex; align-items: center; border-bottom: 1px solid #000; }
+    .serial { min-width: 40px; padding: 6px 8px; font-size: 0.8rem; font-weight: 700; text-align: center; }
+    .name { flex: 1; padding: 6px 10px; font-size: 0.8rem; font-weight: 700; }
+    .registration { padding: 6px 10px; font-size: 0.75rem; font-weight: 600; }
+    .main-row { display: flex; align-items: flex-start; }
+    .qr-section { width: 116px; padding: 8px; }
+    .qr-section img { width: 106px; height: 106px; object-fit: contain; }
+    .info-section { flex: 1; padding: 8px 10px; }
+    .info-section p { font-size: 0.7rem; color: #000; line-height: 1.4; margin-bottom: 4px; }
+    .info-section span { font-weight: 600; }
+    .stamp { width: 110px; height: auto; object-fit: contain; margin-top: 6px; }
+    .photo-section { width: 107px; padding: 8px; }
+    .photo-section img { width: 97px; height: 119px; object-fit: cover; border: 1px solid #000; }
+    .vote-appeal { background: #1e293b; color: white; padding: 5px 10px; text-align: center; border-top: 1px solid #000; }
+    .vote-appeal p { font-size: 0.65rem; }
+    .vote-appeal strong { color: #fbbf24; }
+    @media print { body { padding: 0; background: #fff; } }
   </style>
 </head>
 <body>
@@ -130,28 +126,22 @@ export default function GetVoterSlip() {
     </div>
     <div class="main-row">
       <div class="qr-section">
-        ${voter.qr_code_url ? `<img src="${voter.qr_code_url}" alt="QR">` : '<div style="width:85px;height:85px;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"></div>'}
+        ${voter.qr_code_url ? `<img src="${voter.qr_code_url}" alt="QR">` : '<div style="width:106px;height:106px;background:#f5f5f5;border:1px dashed #ccc;"></div>'}
       </div>
       <div class="info-section">
-        <p><strong>Contact:</strong> ${voter.contact || 'N/A'}</p>
-        <p><strong>Address:</strong> ${voter.address || 'N/A'}</p>
+        <p><span>Contact:</span> ${voter.contact || 'N/A'}</p>
+        <p><span>Address:</span> ${voter.address || 'N/A'}</p>
+        <img src="${stampImageUrl}" alt="Stamp" class="stamp">
       </div>
       <div class="photo-section">
-        ${voter.photo_url ? `<img src="${voter.photo_url}" alt="Photo">` : '<div style="width:71px;height:89px;background:#f3f4f6;border:1px dashed #d1d5db;border-radius:4px;"></div>'}
+        ${voter.photo_url ? `<img src="${voter.photo_url}" alt="Photo">` : '<div style="width:97px;height:119px;background:#f5f5f5;border:1px dashed #ccc;"></div>'}
       </div>
     </div>
     <div class="vote-appeal">
-      <div class="candidate-section">
-        <img src="${candidateImageUrl}" alt="Dev Raj Sharma" class="candidate-photo">
-        <div class="candidate-details">
-          <p class="vote-text">Vote for</p>
-          <p class="candidate-name">DEV RAJ SHARMA</p>
-          <p class="ballot-number">Ballot No. 63</p>
-        </div>
-      </div>
+      <p>Vote for <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong></p>
     </div>
   </div>
-  <p style="text-align:center;margin-top:20px;color:#666;font-size:12px;">Press Ctrl+P to print or save as PDF</p>
+  <p style="text-align:center;margin-top:20px;color:#666;font-size:11px;">Press Ctrl+P to print or save as PDF</p>
 </body>
 </html>`
   }
@@ -197,7 +187,6 @@ Get your voter slip: ${window.location.href}`
           </div>
           <div className="candidate-details">
             <h1 className="candidate-name">DEV RAJ SHARMA</h1>
-            <p className="candidate-title">Advocate, Supreme Court of India</p>
             <div className="ballot-badge">
               <span className="ballot-label">Ballot No.</span>
               <span className="ballot-num">63</span>
@@ -427,7 +416,7 @@ Get your voter slip: ${window.location.href}`
                     </div>
                   </div>
 
-                  {/* Main Content: QR | Info | Photo */}
+                  {/* Main Content: QR | Info | Photo - like PDF cell */}
                   <div className="slip-main-row">
                     <div className="slip-qr-section">
                       {selectedVoter.qr_code_url ? (
@@ -442,8 +431,9 @@ Get your voter slip: ${window.location.href}`
                     </div>
 
                     <div className="slip-info-section">
-                      <p><strong>Contact:</strong> {selectedVoter.contact || 'N/A'}</p>
-                      <p><strong>Address:</strong> {selectedVoter.address || 'N/A'}</p>
+                      <p><span>Contact:</span> {selectedVoter.contact || 'N/A'}</p>
+                      <p><span>Address:</span> {selectedVoter.address || 'N/A'}</p>
+                      <img src="/stamp.png" alt="Stamp" className="slip-stamp" />
                     </div>
 
                     <div className="slip-photo-section">
@@ -459,16 +449,9 @@ Get your voter slip: ${window.location.href}`
                     </div>
                   </div>
 
-                  {/* Vote Appeal with Candidate Photo */}
+                  {/* Vote Appeal - Compact text only */}
                   <div className="slip-vote-appeal">
-                    <div className="slip-candidate-section">
-                      <img src="/profile.png" alt="Dev Raj Sharma" className="slip-candidate-photo" />
-                      <div className="slip-candidate-details">
-                        <p className="slip-vote-text">Vote for</p>
-                        <p className="slip-candidate-name">DEV RAJ SHARMA</p>
-                        <p className="slip-ballot-number">Ballot No. 63</p>
-                      </div>
-                    </div>
+                    <p>Vote for <strong>DEV RAJ SHARMA</strong> — Ballot No. <strong>63</strong></p>
                   </div>
                 </div>
 
